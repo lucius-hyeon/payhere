@@ -12,7 +12,7 @@ class AccountBooks(models.Model):
     date = models.DateField()
     income = models.IntegerField(default=0)
     expenses = models.IntegerField(default=0)
-    balance = models.IntegerField(null=True)
+    balance = models.IntegerField(default=0)
     content = models.CharField(max_length=255, null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
