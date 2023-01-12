@@ -2,11 +2,12 @@ from rest_framework import permissions
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.generics import get_object_or_404
+from django.http import HttpResponseRedirect
 
-
-from .models import AccountBooks
-from .serializers import AccountBooksSerializer
-
+from .models import AccountBooks, Url
+from .serializers import AccountBooksSerializer, UrlSerializer
+import random
+from datetime import datetime,timedelta
 
 class AccountBooksView(APIView):
     permission_classes = [permissions.IsAuthenticated]
@@ -48,3 +49,50 @@ class AccountBooksDetailView(APIView):
             return Response({"message: 삭제 완료."})
         else:
             return Response({"message: 삭제 권한이 없습니다."})
+        
+
+class AccountBooksDetailShortURL(APIView):
+    HOST_DOMAIN = "http://127.0.0.1:8000"
+    
+    def get(self, request, new_url):
+        new_url = self.HOST_DOMAIN + "/" + new_url
+        url = get_object_or_404(Url, new_url=new_url)
+        if self.url_expire_time(url):
+            return Response("해당 URL은 만료되었습니다.")
+        return HttpResponseRedirect(url.origin_url)
+    
+    def post(self, request):
+        try:
+            url = get_object_or_404(Url, origin_url=request.data["origin_url"])
+            if self.url_expire_time(url):
+                raise
+            serializer = UrlSerializer(url)
+            return Response(serializer.data)
+        except:
+            serializer = UrlSerializer(data=request.data)
+            if serializer.is_valid():
+                new_url = self.HOST_DOMAIN + "/" + self.base62()
+                serializer.save(new_url=new_url)
+                return Response(serializer.data)
+            return Response(serializer.errors)            
+    
+    def base62(self):
+        result = ""
+        words = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F',
+                'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 
+                'W', 'X', 'Y', 'Z', 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 
+                'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z']
+        
+        while True:
+            result = ''.join(random.sample(words,8))
+            try:
+                url = url.objects.get(new_link=result)
+            except:
+                return result
+    
+    def url_expire_time(self, url):
+        expire_time = datetime.now() - url.created_at
+        if expire_time > timedelta(minutes=10):
+            url.delete()
+            return True
+        return False

@@ -15,9 +15,11 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, include
+from account_books.views import AccountBooksDetailShortURL
 
 urlpatterns = [
     path("admin/", admin.site.urls),
     path("users/", include("users.urls")),
     path("account_books/", include("account_books.urls")),
+    path("<new_url>/",AccountBooksDetailShortURL.as_view(), name="short_url"),
 ]

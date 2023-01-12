@@ -15,3 +15,13 @@ class AccountBooks(models.Model):
     content = models.CharField(max_length=255, null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+    
+    
+class Url(models.Model):
+    class Meta:
+        db_table = "Url"
+        # ordering = ['created_at']
+        
+    origin_url = models.URLField(max_length=255)
+    new_url = models.URLField(default="")
+    created_at = models.DateTimeField(auto_now_add=True)
