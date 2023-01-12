@@ -30,16 +30,28 @@ class AccountBooksDetailView(APIView):
     
     def get(self, request, author_id, account_book_id):
         account_book = get_object_or_404(AccountBooks, pk=account_book_id, author_id=author_id)
-        serializer = AccountBooksSerializer(account_book)
-        return Response(serializer.data)
+        if request.user == account_book.author:
+            serializer = AccountBooksSerializer(account_book)
+            return Response(serializer.data)
+        return Response("접근 권한이 없습니다.")
     
     def put(self, request, author_id, account_book_id):
+        """
+        가계부의 세부 정보를 수정할 수 있다.
+        단 put 요청 시 is_copy 값이 들어오게 되면 copy 매소드 역할을 해준다
+        """
         account_book = get_object_or_404(AccountBooks, pk=account_book_id, author_id=author_id)
         if request.user == account_book.author:
-            serializer = AccountBooksSerializer(account_book, data=request.data, partial=True)
-            if serializer.is_valid():
-                serializer.save(author=request.user)
-                return Response(serializer.data)
+            is_copy = request.data.get("is_copy",False)
+            if is_copy:
+                account_book.pk = None
+                account_book.save()
+                return Response("복제 성공")
+            else:
+                serializer = AccountBooksSerializer(account_book, data=request.data, partial=True)
+                if serializer.is_valid():
+                    serializer.save(author=request.user)
+                    return Response(serializer.data)
         return Response({"message: 접근 권한이 없습니다."})
     
     def delete(self, request, author_id, account_book_id):
@@ -62,6 +74,10 @@ class AccountBooksDetailShortURL(APIView):
         return HttpResponseRedirect(url.origin_url)
     
     def post(self, request):
+        """
+        url 주소가 넘어오지 않거나, 만료된 url 정보를 담고 있다면
+        새로운 단축 url을 만들어주고 반환한다
+        """
         try:
             url = get_object_or_404(Url, origin_url=request.data["origin_url"])
             if self.url_expire_time(url):
@@ -72,6 +88,7 @@ class AccountBooksDetailShortURL(APIView):
             serializer = UrlSerializer(data=request.data)
             if serializer.is_valid():
                 new_url = self.HOST_DOMAIN + "/" + self.base62()
+                # new_url = self.base62()
                 serializer.save(new_url=new_url)
                 return Response(serializer.data)
             return Response(serializer.errors)            

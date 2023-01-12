@@ -6,9 +6,10 @@ from users.models import User
 class AccountBooks(models.Model):
     class Meta:
         db_table = "AccountBooks"
-        ordering = ['created_at']
+        ordering = ['date']
         
     author = models.ForeignKey(User, on_delete=models.CASCADE)
+    date = models.DateField()
     income = models.IntegerField(default=0)
     expenses = models.IntegerField(default=0)
     balance = models.IntegerField(null=True)
