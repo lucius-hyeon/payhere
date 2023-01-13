@@ -2,11 +2,14 @@ from rest_framework import serializers
 from .models import AccountBooks, Url
 
 class AccountBooksSerializer(serializers.ModelSerializer):
+    """
+    Date에 따른 잔액(balance) 값 변경
+    get_balance() 시간이 너무 오래 걸린다 -> 최적화 방법 찾아보기
+    -> 변경된 balance 값만 저장하고 bulk_update 사용하여 시간 단축
+    """
     account_books = AccountBooks
     balance = serializers.SerializerMethodField()
-    """
-    get_balance() 시간이 너무 오래 걸린다 -> 최적화 방법 찾아보기
-    """
+
     def get_balance(self, obj):
         account_books = AccountBooks.objects.filter(author_id=obj.author.id)
         balance = 0
