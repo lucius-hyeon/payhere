@@ -1,4 +1,4 @@
-from rest_framework import permissions
+from rest_framework import permissions,status
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.generics import get_object_or_404
@@ -15,15 +15,15 @@ class AccountBooksView(APIView):
     def get(self, request, author_id):
         account_books = AccountBooks.objects.filter(author_id = author_id)
         serializer = AccountBooksSerializer(account_books, many=True)
-        return Response(serializer.data)
+        return Response(serializer.data, status=status.HTTP_200_OK)
     
     def post(self, request, author_id):
         serializer = AccountBooksSerializer(data=request.data)
         if serializer.is_valid():
             serializer.save(author=request.user)
-            return Response(serializer.data)
+            return Response(serializer.data, status=status.HTTP_200_OK)
         else:
-            return Response(serializer.errors)
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
 class AccountBooksDetailView(APIView):
     permission_classes = [permissions.IsAuthenticated]
@@ -32,8 +32,8 @@ class AccountBooksDetailView(APIView):
         account_book = get_object_or_404(AccountBooks, pk=account_book_id, author_id=author_id)
         if request.user == account_book.author:
             serializer = AccountBooksSerializer(account_book)
-            return Response(serializer.data)
-        return Response("접근 권한이 없습니다.")
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response({"message":"접근 권한이 없습니다."}, status=status.HTTP_401_UNAUTHORIZED)
     
     def put(self, request, author_id, account_book_id):
         """
@@ -46,21 +46,21 @@ class AccountBooksDetailView(APIView):
             if is_copy:
                 account_book.pk = None
                 account_book.save()
-                return Response("복제 성공")
+                return Response({"message":"복제 성공"}, status=status.HTTP_200_OK)
             else:
                 serializer = AccountBooksSerializer(account_book, data=request.data, partial=True)
                 if serializer.is_valid():
                     serializer.save(author=request.user)
-                    return Response(serializer.data)
-        return Response({"message: 접근 권한이 없습니다."})
+                    return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response({"message: 접근 권한이 없습니다."}, status=status.HTTP_401_UNAUTHORIZED)
     
     def delete(self, request, author_id, account_book_id):
         account_book = get_object_or_404(AccountBooks, pk=account_book_id, author_id=author_id)
         if request.user == account_book.author:
             account_book.delete()
-            return Response({"message: 삭제 완료."})
+            return Response({"message: 삭제 완료."}, status=status.HTTP_200_OK)
         else:
-            return Response({"message: 삭제 권한이 없습니다."})
+            return Response({"message: 삭제 권한이 없습니다."}, status=status.HTTP_401_UNAUTHORIZED)
         
 
 class AccountBooksDetailShortURL(APIView):
@@ -70,7 +70,7 @@ class AccountBooksDetailShortURL(APIView):
         new_url = self.HOST_DOMAIN + "/" + new_url
         url = get_object_or_404(Url, new_url=new_url)
         if self.url_expire_time(url):
-            return Response("해당 URL은 만료되었습니다.")
+            return Response({"message":"해당 URL은 만료되었습니다."}, status=status.HTTP_404_NOT_FOUND)
         return HttpResponseRedirect(url.origin_url)
     
     def post(self, request):
@@ -83,15 +83,15 @@ class AccountBooksDetailShortURL(APIView):
             if self.url_expire_time(url):
                 raise
             serializer = UrlSerializer(url)
-            return Response(serializer.data)
+            return Response(serializer.data, status=status.HTTP_200_OK)
         except:
             serializer = UrlSerializer(data=request.data)
             if serializer.is_valid():
                 new_url = self.HOST_DOMAIN + "/" + self.base62()
                 # new_url = self.base62()
                 serializer.save(new_url=new_url)
-                return Response(serializer.data)
-            return Response(serializer.errors)            
+                return Response(serializer.data, status=status.HTTP_200_OK)
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)            
     
     def base62(self):
         result = ""

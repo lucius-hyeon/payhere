@@ -1,6 +1,7 @@
 from rest_framework_simplejwt.views import TokenObtainPairView
 from rest_framework.response import Response
 from rest_framework.views import APIView
+from rest_framework import status
 
 from .models import User
 from .serializers import UserSerializer
@@ -18,6 +19,6 @@ class UserView(APIView):
         serializer = UserSerializer(data=request.data)
         if serializer.is_valid():
             serializer.save()
-            return Response("회원가입 완료")
+            return Response({"message":"회원가입 완료"}, status=status.HTTP_200_OK)
         else:
-            return Response(serializer.errors)
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
