@@ -1,7 +1,8 @@
 # payhere
-- [페이히어] Python 백엔드 엔지니어 과제 (가계부)
-- 프레임워크 : Django
+### [페이히어] Python 백엔드 엔지니어 과제 (가계부)
+- 프레임워크 : Django(DRF)
 - DB : mysql:5.7
+- 개발 기간 : 23-01-11 ~ 23-01-14 (4일)
 
 # 와이어프레임
 ![image](https://user-images.githubusercontent.com/113074274/212404167-ddda81dd-7074-4990-94ef-73e748cbd7ce.png)
@@ -11,7 +12,7 @@
 - 가계부 기록 중간에 새로운 내용을 삽입 하더라도 잔액이 변경되어 남은 잔액이 얼마나 남았는지 확인 할 수 있도록 설계하였습니다.
 
 # ERD
-![image](https://user-images.githubusercontent.com/113074274/212406929-d8ff9399-a82d-4364-8e82-e8f228b73308.png)
+![image](https://user-images.githubusercontent.com/113074274/212456742-04e11dcc-b764-44ae-b3ba-39c38eb522a1.png)
 
 
 # API
