@@ -20,8 +20,8 @@ class AccountBooksSerializer(serializers.ModelSerializer):
                 if account_book.balance != balance:
                     account_book.balance = balance
                     update_balance.append(account_book)
-            else:
-                break
+            # else:
+            #     break
         AccountBooks.objects.bulk_update(update_balance,["balance"])
         return balance
 
