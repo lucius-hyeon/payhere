@@ -64,6 +64,7 @@ class AccountBooksDetailView(APIView):
         
 
 class AccountBooksDetailShortURL(APIView):
+    permission_classes = [permissions.IsAuthenticated]
     HOST_DOMAIN = "http://127.0.0.1:8000"
     
     def get(self, request, new_url):
