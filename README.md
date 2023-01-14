@@ -58,6 +58,7 @@
         - 리스트 마다 수입, 지출, 현재 잔액, 메모를 확인할 수 있습니다.
         - 모든 리스트를 불러와서 현재 잔액을 변동하여 기록을 불러올 때 시간이 너무 많이 소요되어 코드를 개선하였습니다.
             - update_balance 변수를 생성하고, 변경된 balance 값만 update_balance로 append 하여 bulk_update 시간을 줄여보았습니다.
+            - get_balnace()의 else문으로 인해 balance 업데이트 값 변동이 안되는 것을 확인하여 주석처리하였습니다.
         
         ```python
         class AccountBooksSerializer(serializers.ModelSerializer):
@@ -74,8 +75,8 @@
                         if account_book.balance != balance:
                             account_book.balance = balance
                             update_balance.append(account_book)
-                    else:
-                        break
+                   # else:
+                   #     break
                 AccountBooks.objects.bulk_update(update_balance,["balance"])
                 return balance
         ```
