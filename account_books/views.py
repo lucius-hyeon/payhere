@@ -13,11 +13,17 @@ class AccountBooksView(APIView):
     permission_classes = [permissions.IsAuthenticated]
 
     def get(self, request, author_id):
+        """
+        가계부의 리스트를 불러 옵니다.
+        """
         account_books = AccountBooks.objects.filter(author_id = author_id)
         serializer = AccountBooksSerializer(account_books, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
     
     def post(self, request, author_id):
+        """
+        가계부의 세부 내역을 생성합니다.
+        """
         serializer = AccountBooksSerializer(data=request.data)
         if serializer.is_valid():
             serializer.save(author=request.user)
@@ -29,6 +35,9 @@ class AccountBooksDetailView(APIView):
     permission_classes = [permissions.IsAuthenticated]
     
     def get(self, request, author_id, account_book_id):
+        """
+        가계부의 상세 세부 내역을 불러 옵니다.
+        """
         account_book = get_object_or_404(AccountBooks, pk=account_book_id, author_id=author_id)
         if request.user == account_book.author:
             serializer = AccountBooksSerializer(account_book)
@@ -37,8 +46,8 @@ class AccountBooksDetailView(APIView):
     
     def put(self, request, author_id, account_book_id):
         """
-        가계부의 세부 정보를 수정할 수 있다.
-        단 put 요청 시 is_copy 값이 들어오게 되면 copy 매소드 역할을 해준다
+        가계부의 상세 세부 정보를 수정할 수 있습니다.
+        단 put 요청 시 is_copy 값이 들어오게 되면 copy 매소드 역할을 해줍니다.
         """
         account_book = get_object_or_404(AccountBooks, pk=account_book_id, author_id=author_id)
         if request.user == account_book.author:
@@ -55,6 +64,9 @@ class AccountBooksDetailView(APIView):
         return Response({"message: 접근 권한이 없습니다."}, status=status.HTTP_401_UNAUTHORIZED)
     
     def delete(self, request, author_id, account_book_id):
+        """
+        가계부 상세 세부 내역을 영구 삭제합니다.
+        """
         account_book = get_object_or_404(AccountBooks, pk=account_book_id, author_id=author_id)
         if request.user == account_book.author:
             account_book.delete()
@@ -64,10 +76,18 @@ class AccountBooksDetailView(APIView):
         
 
 class AccountBooksDetailShortURL(APIView):
+    """
+    base62() 메소드로 암호화된 8자리의 url을 생성합니다. (랜덤으로 생성으로 정확한 암호화 방식은 아님)
+    url_expire_time() 메소드는 단축 url이 만료 되었는지 확인, 만료되었으면 해당 url 삭제합니다.
+    """
     permission_classes = [permissions.IsAuthenticated]
     HOST_DOMAIN = "http://127.0.0.1:8000"
     
     def get(self, request, new_url):
+        """
+        단축 url 주소가 있을 경우 해당 가계부 상세 세부 내역으로 이동합니다.
+        단축 url 주소가 만료 되었을 경우 status 404 반환합니다.
+        """
         new_url = self.HOST_DOMAIN + "/" + new_url
         url = get_object_or_404(Url, new_url=new_url)
         if self.url_expire_time(url):
@@ -77,7 +97,7 @@ class AccountBooksDetailShortURL(APIView):
     def post(self, request):
         """
         url 주소가 넘어오지 않거나, 만료된 url 정보를 담고 있다면
-        새로운 단축 url을 만들어주고 반환한다
+        새로운 단축 url을 만들어주고 반환합니다.
         """
         try:
             url = get_object_or_404(Url, origin_url=request.data["origin_url"])

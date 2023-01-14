@@ -16,6 +16,9 @@ class CustomTokenObtainPairView(TokenObtainPairView):
 class UserView(APIView):
         
     def post(self, request):
+        """
+        새로운 유저를 생성합니다.
+        """
         serializer = UserSerializer(data=request.data)
         if serializer.is_valid():
             serializer.save()
